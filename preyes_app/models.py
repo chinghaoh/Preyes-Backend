@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres import fields
 
 
 # Create your models here.
@@ -6,7 +7,7 @@ class User(models.Model):
     first_name = models.CharField(max_length=50, null=False)
     last_name = models.CharField(max_length=50, null=False)
     insertion = models.CharField(max_length=30, null=True, blank=True)
-    email = models.CharField(max_length=100, null=False)
+    email = models.EmailField(max_length=100, null=False)
     notifications = models.BooleanField(default=False)
     birth_date = models.DateField(null=False)
 
@@ -21,6 +22,10 @@ class Admin(User):
 
 
 class Customer(User):
+    target_list = models.OneToOneField(
+        'TargetList',
+        on_delete=models.CASCADE,
+    )
     pass
 
 
@@ -37,3 +42,63 @@ class Retailer(models.Model):
 
 class Bol(Retailer):
     pass
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=100, null=False)
+
+    class Meta:
+        abstract = True
+
+
+class ProductItem(Product):
+    retailer_id = models.CharField(max_length=100, null=False)
+    price = models.DecimalField(null=False)
+    description = models.CharField(max_length=100, null=False, blank=True)
+    category = models.CharField(max_length=100, null=False, blank=True)
+
+
+class ProductCatalog(models.Model):
+    product_items = fields.ArrayField(
+        base_field=models.ForeignKey(
+            'ProductItem',
+            on_delete=models.CASCADE
+        )
+    )
+
+
+class TargetItem(ProductItem):
+    target_price = models.DecimalField(null=False)
+
+
+class TargetList(models.Model):
+    target_items = fields.ArrayField(
+        base_field=models.ForeignKey(
+            'TargetItem',
+            on_delete=models.CASCADE
+        )
+    )
+
+
+class Notification(models.Model):
+    message = models.CharField(max_length=250, null=False)
+    date = models.DateField(null=False)
+    time_stamp = models.DateTimeField(null=False)
+
+    class Meta:
+        abstract = True
+
+
+class ProductNotification(Notification):
+    target_item = models.OneToOneField(
+        'TargetItem',
+        on_delete=models.CASCADE,
+    )
+
+
+class Notify(models.Model):
+    class Meta:
+        abstract = True
+
+    def notify(self):
+        pass
