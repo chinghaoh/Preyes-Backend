@@ -22,3 +22,18 @@ class Admin(User):
 
 class Customer(User):
     pass
+
+
+class Retailer(models.Model):
+    name = models.CharField(max_length=50, null=False)
+    base_url = models.CharField(max_length=100, null=False)
+
+    class Meta:
+        abstract = True
+
+    def get_products(self):
+        pass
+
+
+class Bol(Retailer):
+    pass
