@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.postgres import fields
 
 
 # Create your models here.
@@ -53,31 +52,21 @@ class Product(models.Model):
 
 class ProductItem(Product):
     retailer_id = models.CharField(max_length=100, null=False)
-    price = models.DecimalField(null=False)
+    price = models.DecimalField(null=False, decimal_places=10, max_digits=19)
     description = models.CharField(max_length=100, null=False, blank=True)
     category = models.CharField(max_length=100, null=False, blank=True)
 
 
 class ProductCatalog(models.Model):
-    product_items = fields.ArrayField(
-        base_field=models.ForeignKey(
-            'ProductItem',
-            on_delete=models.CASCADE
-        )
-    )
+    product_items = models.ManyToManyField('ProductItem',related_name='product_items')
 
 
 class TargetItem(ProductItem):
-    target_price = models.DecimalField(null=False)
+    target_price = models.DecimalField(null=False, decimal_places=10, max_digits=19)
 
 
 class TargetList(models.Model):
-    target_items = fields.ArrayField(
-        base_field=models.ForeignKey(
-            'TargetItem',
-            on_delete=models.CASCADE
-        )
-    )
+    target_items = models.ManyToManyField('TargetItem',related_name='target_items')
 
 
 class Notification(models.Model):
