@@ -21,14 +21,10 @@ class Admin(User):
 
 
 class Customer(User):
-    target_list = models.OneToOneField(
-        'TargetList',
-        on_delete=models.CASCADE,
-    )
     pass
 
 
-class Retailer(models.Model):
+class RetailerAbstract(models.Model):
     name = models.CharField(max_length=50, null=False)
     base_url = models.CharField(max_length=100, null=False)
 
@@ -39,7 +35,7 @@ class Retailer(models.Model):
         pass
 
 
-class Bol(Retailer):
+class Retailer(RetailerAbstract):
     pass
 
 
@@ -51,22 +47,25 @@ class Product(models.Model):
 
 
 class ProductItem(Product):
-    retailer_id = models.CharField(max_length=100, null=False)
+    retailer_id = models.ForeignKey('Retailer', on_delete=models.CASCADE, default=None)
     price = models.DecimalField(null=False, decimal_places=10, max_digits=19)
     description = models.CharField(max_length=100, null=False, blank=True)
     category = models.CharField(max_length=100, null=False, blank=True)
+    product_catalog_reference = models.ForeignKey('ProductCatalog', on_delete=models.CASCADE, default=None)
 
 
 class ProductCatalog(models.Model):
-    product_items = models.ManyToManyField('ProductItem',related_name='product_items')
+    pass
 
 
-class TargetItem(ProductItem):
+class TargetItem(models.Model):
+    product_item_reference = models.ForeignKey('ProductItem', on_delete=models.CASCADE, default=None)
     target_price = models.DecimalField(null=False, decimal_places=10, max_digits=19)
+    target_list_reference = models.ForeignKey('TargetList', on_delete=models.CASCADE, default=None)
 
 
 class TargetList(models.Model):
-    target_items = models.ManyToManyField('TargetItem',related_name='target_items')
+    customer_reference = models.OneToOneField('Customer', on_delete=models.CASCADE, default=None)
 
 
 class Notification(models.Model):
