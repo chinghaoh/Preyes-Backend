@@ -16,11 +16,18 @@ class User(models.Model):
 
 class Admin(User):
 
+    def __str__(self):
+        return "Name: {}".format(self.first_name)
+
     def get_analytics(self):
         pass
 
 
 class Customer(User):
+
+    def __str__(self):
+        return "Email: {}".format(self.email)
+
     pass
 
 
@@ -38,6 +45,9 @@ class RetailerAbstract(models.Model):
 class Retailer(RetailerAbstract):
     pass
 
+    def __str__(self):
+        return "Retailer: {}".format(self.name)
+
 
 class Product(models.Model):
     name = models.CharField(max_length=100, null=False)
@@ -53,9 +63,16 @@ class ProductItem(Product):
     category = models.CharField(max_length=100, null=False, blank=True)
     product_catalog_reference = models.ForeignKey('ProductCatalog', on_delete=models.CASCADE, default=None)
 
+    def __str__(self):
+        return "Product: {} Retailer: {}".format(self.name, self.retailer_id.name)
+
 
 class ProductCatalog(models.Model):
+    name = models.CharField(max_length=100, default="preyes catalog")
     pass
+
+    def __str__(self):
+        return "Name: {}".format(self.name)
 
 
 class TargetItem(models.Model):
@@ -63,9 +80,15 @@ class TargetItem(models.Model):
     target_price = models.DecimalField(null=False, decimal_places=10, max_digits=19)
     target_list_reference = models.ForeignKey('TargetList', on_delete=models.CASCADE, default=None)
 
+    def __str__(self):
+        return "Product: {} Email: {}".format(self.product_item_reference.name, self.target_list_reference.customer_reference.email)
+
 
 class TargetList(models.Model):
     customer_reference = models.OneToOneField('Customer', on_delete=models.CASCADE, default=None)
+
+    def __str__(self):
+        return "Email: {}".format(self.customer_reference.email)
 
 
 class Notification(models.Model):
@@ -82,6 +105,10 @@ class ProductNotification(Notification):
         'TargetItem',
         on_delete=models.CASCADE,
     )
+
+    def __str__(self):
+        return "Product name: {} User: {}".format(self.target_item.product_item_reference.name,
+                              self.target_item.target_list_reference.customer_reference.email)
 
 
 class Notify(models.Model):
