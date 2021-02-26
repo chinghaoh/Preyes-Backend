@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'preyes_app.apps.PreyesAppConfig'
+    'preyes_server.preyes_app.apps.PreyesAppConfig'
 ]
 
 MIDDLEWARE = [

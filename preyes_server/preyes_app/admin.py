@@ -1,5 +1,5 @@
 from django.contrib import admin
-from preyes_app import models
+from preyes_server.preyes_app import models
 
 admin.site.register(models.Customer)
 admin.site.register(models.Admin)
