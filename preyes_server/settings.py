@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_crontab',
     'preyes_server.preyes_app.apps.PreyesAppConfig'
 ]
 
@@ -70,6 +71,11 @@ TEMPLATES = [
             ],
         },
     },
+]
+
+# Place CRONJOBS here
+CRONJOBS = [
+    ('0 1 * * *', 'preyes_app.cronjobs.cron.get_categories_bol')
 ]
 
 WSGI_APPLICATION = 'preyes_server.wsgi.application'

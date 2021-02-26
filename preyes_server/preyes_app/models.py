@@ -60,7 +60,7 @@ class ProductItem(Product):
     retailer_id = models.ForeignKey('Retailer', on_delete=models.CASCADE, default=None)
     price = models.DecimalField(null=False, decimal_places=10, max_digits=19)
     description = models.CharField(max_length=100, null=False, blank=True)
-    category = models.CharField(max_length=100, null=False, blank=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, default=None, null=True)
     product_catalog_reference = models.ForeignKey('ProductCatalog', on_delete=models.CASCADE, default=None)
 
     def __str__(self):
@@ -81,7 +81,8 @@ class TargetItem(models.Model):
     target_list_reference = models.ForeignKey('TargetList', on_delete=models.CASCADE, default=None)
 
     def __str__(self):
-        return "Product: {} Email: {}".format(self.product_item_reference.name, self.target_list_reference.customer_reference.email)
+        return "Product: {} Email: {}".format(self.product_item_reference.name,
+                                              self.target_list_reference.customer_reference.email)
 
 
 class TargetList(models.Model):
@@ -108,7 +109,7 @@ class ProductNotification(Notification):
 
     def __str__(self):
         return "Product name: {} User: {}".format(self.target_item.product_item_reference.name,
-                              self.target_item.target_list_reference.customer_reference.email)
+                                                  self.target_item.target_list_reference.customer_reference.email)
 
 
 class Notify(models.Model):
@@ -117,3 +118,12 @@ class Notify(models.Model):
 
     def notify(self):
         pass
+
+
+class Category(models.Model):
+    category_id = models.CharField(max_length=250, null=False, default=0, primary_key=True)
+    name = models.CharField(max_length=250, null=False)
+    retailer_id = models.ForeignKey('Retailer', on_delete=models.CASCADE, default=None)
+
+    def __str__(self):
+        return "Category name: {}".format(self.name)
