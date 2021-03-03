@@ -50,7 +50,7 @@ class Retailer(RetailerAbstract):
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=100, null=False)
+    name = models.TextField(null=False)
 
     class Meta:
         abstract = True
@@ -58,8 +58,11 @@ class Product(models.Model):
 
 class ProductItem(Product):
     retailer_id = models.ForeignKey('Retailer', on_delete=models.CASCADE, default=None)
-    price = models.DecimalField(null=False, decimal_places=10, max_digits=19)
-    description = models.CharField(max_length=100, null=False, blank=True)
+    price = models.DecimalField(null=False, decimal_places=2, max_digits=19)
+    description = models.TextField(null=False, blank=True)
+    specs_tag = models.TextField(null=False, blank=True)
+    product_url = models.URLField(max_length=2048, null=False, blank=True)
+    image_url = models.URLField(max_length=2048, null=False, blank=True)
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, default=None, null=True)
     product_catalog_reference = models.ForeignKey('ProductCatalog', on_delete=models.CASCADE, default=None)
 
