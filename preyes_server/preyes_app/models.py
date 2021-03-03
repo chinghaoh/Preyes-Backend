@@ -24,6 +24,7 @@ class Admin(User):
 
 
 class Customer(User):
+    category_preference = models.ManyToManyField('Category')
 
     def __str__(self):
         return "Email: {}".format(self.email)
