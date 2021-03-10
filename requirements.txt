@@ -10,6 +10,7 @@ colorama==0.4.3
 cryptography==2.8
 distlib==0.3.1
 distro==1.4.0
+dj-database-url==0.5.0
 Django==3.1.6
 django-crontab==0.7.1
 django-environ==0.4.5
@@ -19,6 +20,7 @@ environ==1.0
 fasteners==0.14.1
 filelock==3.0.12
 future==0.18.2
+gunicorn==20.0.4
 httplib2==0.14.0
 idna==2.8
 jeepney==0.6.0
@@ -39,6 +41,7 @@ pexpect==4.6.0
 Pillow==7.0.0
 powerline-status==2.7
 protobuf==3.6.1
+psycopg2==2.8.6
 psycopg2-binary==2.8.6
 ptyprocess==0.7.0
 pycparser==2.20
@@ -64,3 +67,4 @@ virtualenv==20.4.2
 virtualenv-clone==0.5.4
 virtualenvwrapper==4.8.4
 wadllib==1.3.3
+whitenoise==5.2.0

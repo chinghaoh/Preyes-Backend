@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import environ
+import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +31,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['preyesserver.herokuapp.com']
 
 
 # Application definition
@@ -43,10 +45,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_crontab',
     'preyes_server.preyes_app.apps.PreyesAppConfig',
-    'rest_framework'
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,7 +79,9 @@ TEMPLATES = [
 
 # Place CRONJOBS here
 CRONJOBS = [
-    ('0 1 * * *', 'preyes_app.cronjobs.cron.get_categories_bol')
+    ('0 1 * * *', 'preyes_app.cronjobs.cron.get_categories_bol'),
+    ('0 */2 * * *', 'preyes_app.cronjobs.cron.proces_products_bol')
+
 ]
 
 WSGI_APPLICATION = 'preyes_server.wsgi.application'
@@ -143,5 +148,16 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
-
+PROJECT_ROOT = os.path.join(os.path.abspath(__file__))
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'staticfiles')
 STATIC_URL = '/static/'
+
+# Extra lookup directories for collectstatic to find static files
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_ROOT, 'static'),
+)
+
+#  Add configuration for static files storage using whitenoise
+STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+prod_db = dj_database_url.config(conn_max_age=500)
+DATABASES['default'].update(prod_db)
