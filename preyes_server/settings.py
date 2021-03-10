@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_crontab',
-    'preyes_server.preyes_app.apps.PreyesAppConfig'
+    'preyes_server.preyes_app.apps.PreyesAppConfig',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
