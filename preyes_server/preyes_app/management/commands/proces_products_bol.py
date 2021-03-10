@@ -43,8 +43,8 @@ class Command(BaseCommand):
                         retailer_id=retailer,
                         description=product.get('shortDescription', 'No description'),
                         specs_tag=product.get('specsTag', 'No specsTag'),
-                        product_url=product['urls'][1]['value'],
-                        image_url=product['images'][2]['url'],
+                        product_url=product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
+                        image_url=product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
                         category=category,
                         product_catalog_reference=catalog,
                         defaults={'price': product['offerData']['offers'][0]['price']}
