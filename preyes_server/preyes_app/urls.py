@@ -1,5 +1,5 @@
 from preyes_server.preyes_app import views
-from django.urls import path, re_path
+from django.urls import path
 
 urlpatterns = [
     path('customers/', views.customer_list),
