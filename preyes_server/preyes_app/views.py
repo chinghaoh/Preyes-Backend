@@ -4,6 +4,40 @@ from rest_framework.parsers import JSONParser
 from preyes_server.preyes_app.models import Customer, ProductItem, Category
 from preyes_server.preyes_app.serializers import CustomerSerializer, ProductItemSerializer, CategorySerializer
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.sessions.models import Session
+
+
+def check_session(session_id):
+    valid_session = True
+    try:
+        Session.objects.get(pk=session_id)
+
+    except Session.DoesNotExist:
+        valid_session = False
+
+    return valid_session
+
+
+@csrf_exempt
+def auth_login(request):
+    """
+    Login customer
+    """
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        user = authenticate(username=data['username'], password=data['password'])
+        if user is not None:
+            login(request, user=user)
+            return HttpResponse(status=200)
+        else:
+            return HttpResponse(status=400)
+
+
+@csrf_exempt
+def auth_logout(request):
+    if request.method == 'POST':
+        logout(request)
 
 
 @csrf_exempt
@@ -12,9 +46,12 @@ def customer_list(request):
     List all user customers, or create a new customer user.
     """
     if request.method == 'GET':
-        customers = Customer.objects.all()
-        serializer = CustomerSerializer(customers, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        if check_session(request.session.session_key):
+            customers = Customer.objects.all()
+            serializer = CustomerSerializer(customers, many=True)
+            return JsonResponse(serializer.data, safe=False)
+        else:
+            return HttpResponse(status=401)
 
     elif request.method == 'POST':
         data = JSONParser().parse(request)
@@ -32,31 +69,35 @@ def customer_list(request):
         return JsonResponse(serializer.errors, status=400)
 
 
+
 @csrf_exempt
 def customer_detail(request, pk):
     """
     Retrieve, update or delete a customer
     """
-    try:
-        customer = Customer.objects.get(pk=pk)
-    except Customer.DoesNotExist:
-        return HttpResponse(status=404)
+    if check_session(request.session.session_key):
+        try:
+            customer = Customer.objects.get(pk=pk)
+        except Customer.DoesNotExist:
+            return HttpResponse(status=404)
 
-    if request.method == 'GET':
-        serializer = CustomerSerializer(customer)
-        return JsonResponse(serializer.data)
-
-    elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = CustomerSerializer(customer, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+        if request.method == 'GET':
+            serializer = CustomerSerializer(customer)
             return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
 
-    elif request.method == 'DELETE':
-        customer.delete()
-        return HttpResponse(status=204)
+        elif request.method == 'PUT':
+            data = JSONParser().parse(request)
+            serializer = CustomerSerializer(customer, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return JsonResponse(serializer.data)
+            return JsonResponse(serializer.errors, status=400)
+
+        elif request.method == 'DELETE':
+            customer.delete()
+            return HttpResponse(status=204)
+    else:
+        return HttpResponse(status=401)
 
 
 @csrf_exempt
@@ -64,10 +105,13 @@ def product_item_list(request):
     """
     List all product_items.
     """
-    if request.method == 'GET':
-        products = ProductItem.objects.all()
-        serializer = ProductItemSerializer(products, many=True)
-        return JsonResponse(serializer.data, safe=False)
+    if check_session(request.session.session_key):
+        if request.method == 'GET':
+            products = ProductItem.objects.all()
+            serializer = ProductItemSerializer(products, many=True)
+            return JsonResponse(serializer.data, safe=False)
+    else:
+        return HttpResponse(status=401)
 
 
 @csrf_exempt
@@ -79,26 +123,29 @@ def product_item_list_for_category(request):
     """
 
     # Get a productlist based on user preferences or category filter
-    customer_id = request.GET.get('customer_id')
-    if customer_id:
+    if check_session(request.session.session_key):
+        customer_id = request.GET.get('customer_id')
+        if customer_id:
+            try:
+                customer = Customer.objects.get(pk=customer_id)
+            except Customer.DoesNotExist:
+                return HttpResponse(status=404)
+            category_list = [category.category_id for category in customer.category_preference.all()]
+        else:
+            category_list = request.GET.get('categories').split(',')
+
+        # Returns a product list based on the given categories
         try:
-            customer = Customer.objects.get(pk=customer_id)
-        except Customer.DoesNotExist:
+            category_objects = Category.objects.filter(category_id__in=category_list)
+        except Category.DoesNotExist:
             return HttpResponse(status=404)
-        category_list = [category.category_id for category in customer.category_preference.all()]
+
+        if request.method == 'GET':
+            products = ProductItem.objects.filter(category__in=category_objects)
+            serializer = ProductItemSerializer(products, many=True)
+            return JsonResponse(serializer.data, safe=False)
     else:
-        category_list = request.GET.get('categories').split(',')
-
-    # Returns a product list based on the given categories
-    try:
-        category_objects = Category.objects.filter(category_id__in=category_list)
-    except Category.DoesNotExist:
-        return HttpResponse(status=404)
-
-    if request.method == 'GET':
-        products = ProductItem.objects.filter(category__in=category_objects)
-        serializer = ProductItemSerializer(products, many=True)
-        return JsonResponse(serializer.data, safe=False)
+        return HttpResponse(status=401)
 
 
 @csrf_exempt
@@ -106,26 +153,29 @@ def product_item_detail(request, pk):
     """
     Retrieve, update or delete a product_item.
     """
-    try:
-        product_item = ProductItem.objects.get(pk=pk)
-    except ProductItem.DoesNotExist:
-        return HttpResponse(status=404)
+    if check_session(request.session.session_key):
+        try:
+            product_item = ProductItem.objects.get(pk=pk)
+        except ProductItem.DoesNotExist:
+            return HttpResponse(status=404)
 
-    if request.method == 'GET':
-        serializer = ProductItemSerializer(product_item)
-        return JsonResponse(serializer.data)
-
-    elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = ProductItemSerializer(product_item, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+        if request.method == 'GET':
+            serializer = ProductItemSerializer(product_item)
             return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
 
-    elif request.method == 'DELETE':
-        product_item.delete()
-        return HttpResponse(status=204)
+        elif request.method == 'PUT':
+            data = JSONParser().parse(request)
+            serializer = ProductItemSerializer(product_item, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return JsonResponse(serializer.data)
+            return JsonResponse(serializer.errors, status=400)
+
+        elif request.method == 'DELETE':
+            product_item.delete()
+            return HttpResponse(status=204)
+    else:
+        return HttpResponse(status=401)
 
 
 @csrf_exempt
@@ -133,10 +183,13 @@ def all_categories(request):
     """
     List all categories
     """
-    if request.method == 'GET':
-        categories = Category.objects.all()
-        serializer = CategorySerializer(categories, many=True)
-        return JsonResponse(serializer.data, safe=False)
+    if check_session(request.session.session_key):
+        if request.method == 'GET':
+            categories = Category.objects.all()
+            serializer = CategorySerializer(categories, many=True)
+            return JsonResponse(serializer.data, safe=False)
+    else:
+        return HttpResponse(status=401)
 
 
 @csrf_exempt
@@ -144,25 +197,27 @@ def category_detail(request, pk):
     """
     Retrieve, update or delete a product_item.
     """
-    try:
-        category = Category.objects.get(pk=pk)
-    except Category.DoesNotExist:
-        return HttpResponse(status=404)
+    if check_session(request.session.session_key):
+        try:
+            category = Category.objects.get(pk=pk)
+        except Category.DoesNotExist:
+            return HttpResponse(status=404)
 
-    if request.method == 'GET':
-        serializer = CategorySerializer(category)
-        return JsonResponse(serializer.data)
-
-    elif request.method == 'PUT':
-        data = JSONParser().parse(request)
-        serializer = CategorySerializer(category, data=data, partial=True)
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
+        if request.method == 'GET':
+            serializer = CategorySerializer(category)
             return JsonResponse(serializer.data)
-        return JsonResponse(serializer.errors, status=400)
 
-    elif request.method == 'DELETE':
-        category.delete()
-        return HttpResponse(status=204)
+        elif request.method == 'PUT':
+            data = JSONParser().parse(request)
+            serializer = CategorySerializer(category, data=data, partial=True)
+            if serializer.is_valid(raise_exception=True):
+                serializer.save()
+                return JsonResponse(serializer.data)
+            return JsonResponse(serializer.errors, status=400)
 
+        elif request.method == 'DELETE':
+            category.delete()
+            return HttpResponse(status=204)
+    else:
+        return HttpResponse(status=401)
 
