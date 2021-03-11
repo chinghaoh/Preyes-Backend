@@ -29,7 +29,13 @@ def auth_login(request):
         user = authenticate(username=data['username'], password=data['password'])
         if user is not None:
             login(request, user=user)
-            return HttpResponse(status=200)
+            try:
+                customer = Customer.objects.get(email=data['username'])
+                serializer = CustomerSerializer(customer)
+            except Customer.DoesNotExist:
+                return HttpResponse(status=404)
+
+            return JsonResponse(serializer.data, status=200)
         else:
             return HttpResponse(status=400)
 
