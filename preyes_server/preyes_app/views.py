@@ -1,9 +1,9 @@
 from django.http import HttpResponse, JsonResponse
-from django.db.models import Q
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from preyes_server.preyes_app.models import Customer, ProductItem, Category
 from preyes_server.preyes_app.serializers import CustomerSerializer, ProductItemSerializer, CategorySerializer
+from django.contrib.auth.models import User
 
 
 @csrf_exempt
@@ -20,7 +20,14 @@ def customer_list(request):
         data = JSONParser().parse(request)
         serializer = CustomerSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            user = User.objects.create_user(
+                username=data['email'],
+                password=data['password'],
+                email=data['email'],
+                first_name=data['first_name'],
+                last_name=data['last_name']
+            )
+            serializer.save(auth_user_reference=user)
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 

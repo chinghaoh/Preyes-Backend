@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User as AuthUser
 
 
 # Create your models here.
@@ -9,6 +10,7 @@ class User(models.Model):
     email = models.EmailField(max_length=100, null=False)
     notifications = models.BooleanField(default=False)
     birth_date = models.DateField(null=False)
+    auth_user_reference = models.OneToOneField(AuthUser, on_delete=models.CASCADE, default=None)
 
     class Meta:
         abstract = True
