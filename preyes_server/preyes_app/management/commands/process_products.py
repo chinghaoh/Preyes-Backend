@@ -17,7 +17,7 @@ class Command(BaseCommand):
 
             # --------------------------------------------
 
-            # Retrieve the bol.com constants for creating or updating objects
+            # Retrieve retailer constants for creating or updating objects
             retailer = Retailer.objects.get(name=retailer_object.name)
             catalog = ProductCatalog.objects.get(name='preyes catalog')
 
