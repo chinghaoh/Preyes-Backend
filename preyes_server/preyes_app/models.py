@@ -61,8 +61,8 @@ class Bol(RetailerAbstract):
         env_file = str(root_dir.path('.env'))
         env.read_env(env_file)
 
-        url = self.base_url + "catalog/v4/lists/?ids=0&apikey={apikey}&dataoutput=categories".format(
-            apikey=env('BOL_API_KEY'))
+        url = "{base_url}catalog/v4/lists/?ids=0&apikey={apikey}&dataoutput=categories".format(
+            apikey=env('BOL_API_KEY'), base_url=self.base_url)
 
         response = None
         try:
