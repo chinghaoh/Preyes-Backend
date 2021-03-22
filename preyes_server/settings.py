@@ -81,8 +81,7 @@ TEMPLATES = [
 # Place CRONJOBS here
 CRONJOBS = [
     ('0 1 * * *', 'preyes_app.cronjobs.cron.get_categories_retailers'),
-    ('0 */2 * * *', 'preyes_app.cronjobs.cron.proces_products_bol')
-
+    ('0 */2 * * *', 'preyes_app.cronjobs.cron.get_products_retailers')
 ]
 
 WSGI_APPLICATION = 'preyes_server.wsgi.application'

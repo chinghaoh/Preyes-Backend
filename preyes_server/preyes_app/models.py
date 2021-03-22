@@ -43,7 +43,7 @@ class RetailerAbstract(models.Model):
     class Meta:
         abstract = True
 
-    def get_products(self):
+    def get_products(self, category_ids, retailer, catalog):
         pass
 
 
@@ -51,7 +51,7 @@ class Bol(RetailerAbstract):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.name = 'Bol.com'
+        self.name = 'bol.com'
         self.base_url = 'https://api.bol.com/'
 
     # Method to gather the categories of a retailer
@@ -94,6 +94,36 @@ class Bol(RetailerAbstract):
             print(f'Error occurred: ${e}')
 
         return categories
+
+    def get_products(self, category_ids, retailer, catalog):
+        root_dir = environ.Path(__file__) - 3
+        env = environ.Env()
+        env_file = str(root_dir.path('.env'))
+        env.read_env(env_file)
+
+        for category_id in category_ids:
+            category = Category.objects.get(category_id=category_id, retailer_id=retailer)
+            response = requests.get(
+                "{base_url}catalog/v4/lists/?ids={category_id}&apikey={apikey}&dataoutput=products&limit=100".format(
+                    base_url=self.base_url,
+                    apikey=env('BOL_API_KEY'),
+                    category_id=category_id))
+
+            # If the response is OK, create or update the objects
+            if response.status_code == 200:
+                all_products = response.json()['products']
+                for product in all_products:
+                    new_product = ProductItem.objects.update_or_create(
+                        name=product.get('title', 'No title'),
+                        retailer_id=retailer,
+                        description=product.get('shortDescription', 'No description'),
+                        specs_tag=product.get('specsTag', 'No specsTag'),
+                        product_url=product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
+                        image_url=product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
+                        category=category,
+                        product_catalog_reference=catalog,
+                        defaults={'price': product['offerData']['offers'][0]['price']}
+                    )
 
 
 class Retailer(RetailerAbstract):
