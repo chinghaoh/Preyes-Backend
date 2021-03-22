@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User as AuthUser
+import environ
+import requests
 
 
 # Create your models here.
@@ -43,6 +45,55 @@ class RetailerAbstract(models.Model):
 
     def get_products(self):
         pass
+
+
+class Bol(RetailerAbstract):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = 'Bol.com'
+        self.base_url = 'https://api.bol.com/'
+
+    # Method to gather the categories of a retailer
+    def get_categories_retailer(self):
+        root_dir = environ.Path(__file__) - 3
+        env = environ.Env()
+        env_file = str(root_dir.path('.env'))
+        env.read_env(env_file)
+
+        url = "{base_url}catalog/v4/lists/?ids=0&apikey={apikey}&dataoutput=categories".format(
+            base_url=self.base_url, apikey=env('BOL_API_KEY'))
+
+        response = None
+        try:
+            response = requests.get(url).json()
+        except Exception as e:
+            print(f'Error occurred: ${e}')
+
+        return response
+
+    # Method to extract categories from raw_data of retailer request
+    def categories_extraction(self, raw_data):
+        categories = None
+        try:
+
+            categories = {
+                raw_data['originalRequest']['category']['id']: {
+                    'name': raw_data['originalRequest']['category']['name']
+                }
+            }
+
+            for category in raw_data['categories']:
+                categories[category['id']] = {
+                    'name': category['name']
+                }
+        except KeyError:
+            print(f'Error occurred when trying to access a key from raw_data')
+
+        except Exception as e:
+            print(f'Error occurred: ${e}')
+
+        return categories
 
 
 class Retailer(RetailerAbstract):
