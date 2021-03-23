@@ -68,7 +68,7 @@ class Bol(RetailerAbstract):
         try:
             response = requests.get(url).json()
         except Exception as e:
-            print(f'Error occurred: ${e}')
+            print(f'Error occurred: {e}')
 
         return response
 
@@ -91,7 +91,7 @@ class Bol(RetailerAbstract):
             print(f'Error occurred when trying to access a key from raw_data')
 
         except Exception as e:
-            print(f'Error occurred: ${e}')
+            print(f'Error occurred: {e}')
 
         return categories
 
