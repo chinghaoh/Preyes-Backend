@@ -227,3 +227,21 @@ def category_detail(request, pk):
     else:
         return HttpResponse(status=401)
 
+
+@csrf_exempt
+def register_device(request):
+    from fcm_django.models import FCMDevice
+    from preyes_server.settings import FCM_DJANGO_SETTING
+    if request.method == 'POST':
+        try:
+            device = FCMDevice()
+            data = JSONParser().parse(request)
+            device.registration_id = data['registration_id']
+            device.user = User.objects.get(id=data['id'])
+            device.save()
+
+            return JsonResponse("true", status=200, safe=False)
+        except:
+            return JsonResponse("false", status=400, safe=False)
+
+
