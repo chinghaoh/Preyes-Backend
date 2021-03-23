@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'django_crontab',
     'preyes_server.preyes_app.apps.PreyesAppConfig',
     'rest_framework',
+    'fcm_django'
 ]
 
 MIDDLEWARE = [
@@ -77,6 +78,12 @@ TEMPLATES = [
         },
     },
 ]
+
+
+# For Firebase Cloud Messaging
+FCM_DJANGO_SETTING = {
+    "FCM_SERVER_KEY": env('FCM_KEY')
+}
 
 # Place CRONJOBS here
 CRONJOBS = [
