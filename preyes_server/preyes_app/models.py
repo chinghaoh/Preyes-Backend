@@ -164,7 +164,7 @@ class ProductCatalog(models.Model):
 
 class TargetItem(models.Model):
     product_item_reference = models.ForeignKey('ProductItem', on_delete=models.CASCADE, default=None)
-    target_price = models.DecimalField(null=False, decimal_places=10, max_digits=19)
+    target_price = models.DecimalField(null=False, decimal_places=2, max_digits=19)
     target_list_reference = models.ForeignKey('TargetList', on_delete=models.CASCADE, default=None)
 
     def __str__(self):
