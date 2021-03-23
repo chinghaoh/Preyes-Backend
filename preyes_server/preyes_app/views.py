@@ -1,8 +1,9 @@
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
-from preyes_server.preyes_app.models import Customer, ProductItem, Category
-from preyes_server.preyes_app.serializers import CustomerSerializer, ProductItemSerializer, CategorySerializer
+from preyes_server.preyes_app.models import Customer, ProductItem, Category, TargetItem, TargetList
+from preyes_server.preyes_app.serializers import CustomerSerializer, ProductItemSerializer, CategorySerializer, \
+     TargetItemSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.models import Session
@@ -245,3 +246,60 @@ def register_device(request):
             return JsonResponse("false", status=400, safe=False)
 
 
+
+@csrf_exempt
+def crud_targetitem_targetlist(request, email):
+    """
+    Function allows crud actions on target items to targetlist
+
+    POST: Input variables: target_price and product_item_reference_id
+    """
+    if check_session(request.session.session_key):
+
+        if check_session(request.session.session_key):
+            try:
+                # Get customer based on email
+                customer = Customer.objects.get(email=email)
+
+                # Get data from request body
+                data = JSONParser().parse(request)
+
+                # Check if customer has a target list otherwise create it
+                target_list, created = TargetList.objects.get_or_create(customer_reference=customer)
+
+                # Get the product item based on primary key
+                product_item = ProductItem.objects.get(pk=data["product_item_reference_id"])
+
+                # Make target item object
+                target_item = TargetItem(product_item_reference=product_item,
+                                         target_list_reference=target_list, target_price=data["target_price"])
+
+            except Customer.DoesNotExist:
+                return HttpResponse(status=404)
+
+        # Add target item to target list
+        if request.method == 'POST':
+            try:
+                target_item = TargetItem.objects.get(product_item_reference=product_item,
+                                                         target_list_reference=target_list)
+                return HttpResponse("Specific target item already exists")
+            except TargetItem.DoesNotExist:
+                target_item_serializer = TargetItemSerializer(target_item, data=data, partial=True)
+                if target_item_serializer.is_valid(raise_exception=True):
+                    target_item_serializer.save()
+                    return JsonResponse(target_item_serializer.data)
+                return JsonResponse(target_item_serializer.errors, status=400)
+
+        # update the target price of target item
+        if request.method == 'PUT':
+            target_item = TargetItem.objects.filter(product_item_reference=data["product_item_reference_id"],
+                                                    target_list_reference=target_list).update(target_price=data["target_price"])
+            return HttpResponse(target_item)
+
+        # delete target item from a target list
+        if request.method == 'DELETE':
+            target_item = TargetItem.objects.filter(product_item_reference=data["product_item_reference_id"],
+                                                    target_list_reference=target_list).delete()
+            return HttpResponse(target_item)
+    else:
+        return HttpResponse(status=401)
