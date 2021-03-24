@@ -42,7 +42,13 @@ class RetailerAbstract(models.Model):
 
     class Meta:
         abstract = True
-
+        
+    def get_categories_retailer(self):
+        pass
+    
+    def categories_extraction(self, raw_data):
+        pass
+        
     def get_products(self, category_ids, retailer, catalog):
         pass
 
