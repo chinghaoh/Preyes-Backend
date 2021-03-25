@@ -230,7 +230,7 @@ def all_categories(request):
     """
     if check_session(request.session.session_key):
         if request.method == 'GET':
-            categories = Category.objects.all()
+            categories = Category.objects.all().exclude(category_id='0')
             serializer = CategorySerializer(categories, many=True)
             return JsonResponse(serializer.data, safe=False)
     else:
