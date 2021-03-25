@@ -3,10 +3,11 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from preyes_server.preyes_app.models import Customer, ProductItem, Category, TargetItem, TargetList
 from preyes_server.preyes_app.serializers import CustomerSerializer, ProductItemSerializer, CategorySerializer, \
-     TargetItemSerializer
+    TargetItemSerializer
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.sessions.models import Session
+from django.core.mail import send_mail
 
 
 def check_session(session_id):
@@ -48,6 +49,44 @@ def auth_logout(request):
 
 
 @csrf_exempt
+def reset_password(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        try:
+            customer = User.objects.get(username=data['username'])
+            customer.set_password(data['password'])
+            customer.save()
+        except KeyError:
+            return HttpResponse("Invalid request body", status=400)
+        except User.DoesNotExist:
+            return HttpResponse(f"The customer with the username {data['username']} does not exist", status=404)
+
+        return HttpResponse("Successfully changed password!", status=200)
+
+
+@csrf_exempt
+def forgot_password(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        try:
+            customer = User.objects.get(username=data['email'])
+            send_mail(
+                'Reset Password',
+                'This is a test message',
+                'preyesapp@gmail.com',
+                [customer.email]
+            )
+            return HttpResponse('Successfully sent the reset email', status=200)
+        except KeyError:
+            return HttpResponse(f"Request body is not valid", status=400)
+        except User.DoesNotExist:
+            return HttpResponse(f"No customer found with the email {data['email']}", status=404)
+        except Exception as e:
+            print(f'An error occurred {e}')
+
+
+
+@csrf_exempt
 def customer_list(request):
     """
     List all user customers, or create a new customer user.
@@ -74,7 +113,6 @@ def customer_list(request):
             serializer.save(auth_user_reference=user)
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
-
 
 
 @csrf_exempt
@@ -246,7 +284,6 @@ def register_device(request):
             return JsonResponse("false", status=400, safe=False)
 
 
-
 @csrf_exempt
 def crud_targetitem_targetlist(request, email):
     """
@@ -281,7 +318,7 @@ def crud_targetitem_targetlist(request, email):
             # Check if specific target item already exists
             try:
                 TargetItem.objects.get(product_item_reference=product_item,
-                                                         target_list_reference=target_list)
+                                       target_list_reference=target_list)
                 return HttpResponse("Specific target item already exists")
             except TargetItem.DoesNotExist:
 
@@ -295,7 +332,8 @@ def crud_targetitem_targetlist(request, email):
         # update the target price of target item
         if request.method == 'PUT':
             target_item = TargetItem.objects.filter(product_item_reference=data["product_item_reference_id"],
-                                                    target_list_reference=target_list).update(target_price=data["target_price"])
+                                                    target_list_reference=target_list).update(
+                target_price=data["target_price"])
             return HttpResponse(target_item)
 
         # delete target item from a target list
