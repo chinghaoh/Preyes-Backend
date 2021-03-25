@@ -85,7 +85,6 @@ def forgot_password(request):
             print(f'An error occurred {e}')
 
 
-
 @csrf_exempt
 def customer_list(request):
     """
