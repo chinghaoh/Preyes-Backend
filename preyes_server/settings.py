@@ -85,6 +85,13 @@ FCM_DJANGO_SETTING = {
     "FCM_SERVER_KEY": env('FCM_KEY')
 }
 
+# Email server settings
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'preyesapp@gmail.com'
+EMAIL_HOST_PASSWORD = env('EMAIL_PASSWORD')
+EMAIL_USE_TLS = 1
+
 # Place CRONJOBS here
 CRONJOBS = [
     ('0 1 * * *', 'preyes_app.cronjobs.cron.get_categories_retailers'),
