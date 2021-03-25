@@ -12,7 +12,6 @@ class User(models.Model):
     email = models.EmailField(max_length=100, null=False)
     notifications = models.BooleanField(default=False)
     birth_date = models.DateField(null=False)
-    auth_user_reference = models.OneToOneField(AuthUser, on_delete=models.CASCADE, default=None)
 
     class Meta:
         abstract = True
@@ -29,11 +28,15 @@ class Admin(User):
 
 class Customer(User):
     category_preference = models.ManyToManyField('Category')
+    auth_user_reference = models.OneToOneField(AuthUser, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return "Email: {}".format(self.email)
 
-    pass
+    # Delete method is overwritten so that the auth_user linked to the customer is deleted aswell
+    def delete(self, *args, **kwargs):
+        self.auth_user_reference.delete()
+        return super(self.__class__, self).delete(*args, **kwargs)
 
 
 class RetailerAbstract(models.Model):
@@ -42,13 +45,13 @@ class RetailerAbstract(models.Model):
 
     class Meta:
         abstract = True
-        
+
     def get_categories_retailer(self):
         pass
-    
+
     def categories_extraction(self, raw_data):
         pass
-        
+
     def get_products(self, category_ids, retailer, catalog):
         pass
 
