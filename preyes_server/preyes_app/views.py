@@ -1,7 +1,11 @@
 from django.http import HttpResponse, JsonResponse
+import string
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.crypto import get_random_string
 from rest_framework.parsers import JSONParser
-from preyes_server.preyes_app.models import Customer, ProductItem, Category, TargetItem, TargetList
+from preyes_server.preyes_app.models import Customer, ProductItem, Category, TargetItem, TargetList, \
+    PasswordChangeRequest
 from preyes_server.preyes_app.serializers import CustomerSerializer, ProductItemSerializer, CategorySerializer, \
     TargetItemSerializer
 from django.contrib.auth.models import User
@@ -53,13 +57,26 @@ def reset_password(request):
     if request.method == 'POST':
         data = JSONParser().parse(request)
         try:
-            customer = User.objects.get(username=data['username'])
-            customer.set_password(data['password'])
-            customer.save()
+            password_request = PasswordChangeRequest.objects.get(GUID=data['GUID'])
+            now = timezone.now()
+            time_difference_minutes = (now - password_request.requested_at).total_seconds() / 60
+            if time_difference_minutes <= 60.0:
+                if not password_request.used:
+                    customer = User.objects.get(username=password_request.email.email)
+                    customer.set_password(data['password'])
+                    customer.save()
+                    password_request.used = True
+                    password_request.save()
+                else:
+                    return HttpResponse(f"The link for the GUID {data['GUID']} has already been used", status=409)
+            else:
+                return HttpResponse(f"The link for the GUID {data['GUID']} has been expired", status=408)
         except KeyError:
             return HttpResponse("Invalid request body", status=400)
         except User.DoesNotExist:
-            return HttpResponse(f"The customer with the username {data['username']} does not exist", status=404)
+            return HttpResponse(f"Could not find the customer for the given GUID", status=404)
+        except PasswordChangeRequest.DoesNotExist:
+            return HttpResponse(f"Could not find an entry with the GUID {data['GUID']}", status=404)
 
         return HttpResponse("Successfully changed password!", status=200)
 
@@ -70,9 +87,17 @@ def forgot_password(request):
         data = JSONParser().parse(request)
         try:
             customer = User.objects.get(username=data['email'])
+            customer_foreign = Customer.objects.get(auth_user_reference=customer)
+            created_password_request = PasswordChangeRequest.objects.create(
+                email=customer_foreign, GUID=get_random_string(12, allowed_chars=string.ascii_uppercase + string.digits)
+            )
+            body = f"Dear {customer_foreign.first_name} \n \n" \
+                   f"Click the following link to reset your password: https://preyesapp.com/reset_password?GUID={created_password_request.GUID} \n \n" \
+                   f"Kind regards, \n \n" \
+                   f"Preyes Co"
             send_mail(
                 'Reset Password',
-                'This is a test message',
+                body,
                 'preyesapp@gmail.com',
                 [customer.email]
             )
@@ -80,6 +105,8 @@ def forgot_password(request):
         except KeyError:
             return HttpResponse(f"Request body is not valid", status=400)
         except User.DoesNotExist:
+            return HttpResponse(f"No customer found with the email {data['email']}", status=404)
+        except Customer.DoesNotExist:
             return HttpResponse(f"No customer found with the email {data['email']}", status=404)
         except Exception as e:
             print(f'An error occurred {e}')
