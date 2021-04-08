@@ -223,3 +223,13 @@ class Category(models.Model):
 
     def __str__(self):
         return "Category name: {}".format(self.name)
+
+
+class PasswordChangeRequest(models.Model):
+    requested_at = models.DateTimeField(auto_now_add=True, null=False)
+    email = models.ForeignKey('Customer', on_delete=models.CASCADE, default=None)
+    GUID = models.CharField(max_length=250, null=False)
+    used = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'Requested at: {self.requested_at} by the user: {self.email}'
