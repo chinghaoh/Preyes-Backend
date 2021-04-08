@@ -95,7 +95,8 @@ EMAIL_USE_TLS = 1
 # Place CRONJOBS here
 CRONJOBS = [
     ('0 1 * * *', 'preyes_app.cronjobs.cron.get_categories_retailers'),
-    ('0 */2 * * *', 'preyes_app.cronjobs.cron.get_products_retailers')
+    ('0 */1 * * *', 'preyes_app.cronjobs.cron.get_products_retailers'),
+    ('15 */1 * * *', 'preyes_app.cronjobs.cron.send_notifications_target_items'),
 ]
 
 WSGI_APPLICATION = 'preyes_server.wsgi.application'

@@ -8,7 +8,7 @@ def notify(client_id, title, body, data, sound=False):
     env_file = str(root_dir.path('.env'))
     env.read_env(env_file)
     try:
-        device = FCMDevice.objects.get(user=client_id)
+        device = FCMDevice.objects.filter(user=client_id).latest('date_created')
         result = device.send_message(title=title, body=body, data=data, sound=sound,
                                      api_key=env('FCM_KEY'))
         return result['success'] if result['success'] == 1 else result['failure']
