@@ -122,7 +122,8 @@ class Bol(RetailerAbstract):
             if response.status_code == 200:
                 all_products = response.json()['products']
                 for product in all_products:
-                    new_product = ProductItem.objects.update_or_create(
+                    ProductItem.objects.update_or_create(
+                        product_id=product['id'],
                         name=product.get('title', 'No title'),
                         retailer_id=retailer,
                         description=product.get('shortDescription', 'No description'),
@@ -131,7 +132,10 @@ class Bol(RetailerAbstract):
                         image_url=product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
                         category=category,
                         product_catalog_reference=catalog,
-                        defaults={'price': product['offerData']['offers'][0]['price']}
+                        defaults={
+                            'price': product['offerData']['offers'][0]['price'],
+                            'old_price': ProductItem.objects.get(product_id=product['id']).price
+                        }
                     )
 
 
@@ -152,6 +156,8 @@ class Product(models.Model):
 class ProductItem(Product):
     retailer_id = models.ForeignKey('Retailer', on_delete=models.CASCADE, default=None)
     price = models.DecimalField(null=False, decimal_places=2, max_digits=19)
+    product_id = models.CharField(max_length=255, null=False, blank=True, default='0')
+    old_price = models.DecimalField(null=False, decimal_places=2, max_digits=19, default=0)
     description = models.TextField(null=False, blank=True)
     specs_tag = models.TextField(null=False, blank=True)
     product_url = models.URLField(max_length=2048, null=False, blank=True)
