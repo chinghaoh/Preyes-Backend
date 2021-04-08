@@ -1,4 +1,5 @@
 from preyes_server.preyes_app.models import *
+from preyes_server.preyes_app.notify import notify
 
 
 def get_categories_retailers():
@@ -61,3 +62,14 @@ def get_products_retailers():
 
         result = get_products(all_category_ids, retailer, catalog)
         # --------------------------------------------
+
+
+def send_notifications_target_items():
+    target_items = TargetItem.objects.all()
+    for target_item in target_items:
+        if target_item.target_price <= target_item.product_item_reference.price:
+            customer = Customer.objects.get(id=target_item.target_list_reference.customer_reference_id)
+            user_id = customer.auth_user_reference.id
+            title = f"{target_item.product_item_reference.name} has met your target price!"
+            body = f"Click on the link to buy your wanted product: {target_item.product_item_reference.product_url}"
+            notify(user_id, title, body, data=None, sound=True)
