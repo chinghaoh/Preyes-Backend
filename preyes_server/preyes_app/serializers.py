@@ -14,7 +14,7 @@ class ProductItemSerializer(serializers.ModelSerializer):
         model = ProductItem
         fields = [
             'id', 'retailer_id', 'price', 'description', 'specs_tag', 'product_url',
-            'image_url', 'category', 'product_catalog_reference'
+            'image_url', 'category', 'product_catalog_reference', 'name'
         ]
 
 
