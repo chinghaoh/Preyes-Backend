@@ -14,6 +14,7 @@ urlpatterns = [
     path('categories/', views.all_categories),
     path('categories/<int:pk>/', views.category_detail),
     path('targetlist/<str:email>/', views.crud_targetitem_targetlist),
+    path('targetlist/<str:email>/<int:pk>/', views.get_targetitem_targetlist),
     path('device/register/', views.register_device),
 
 ]

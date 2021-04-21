@@ -313,7 +313,7 @@ def register_device(request):
 @csrf_exempt
 def crud_targetitem_targetlist(request, email):
     """
-    Function allows crud actions on target items to targetlist
+    Function allows cud actions on target items to targetlist
 
     POST: Input variables: target_price and product_item_reference_id
     """
@@ -367,5 +367,35 @@ def crud_targetitem_targetlist(request, email):
             target_item = TargetItem.objects.filter(product_item_reference=data["product_item_reference_id"],
                                                     target_list_reference=target_list).delete()
             return HttpResponse(target_item)
+    else:
+        return HttpResponse(status=401)
+
+
+@csrf_exempt
+def get_targetitem_targetlist(request, email, pk):
+    """
+    Function allows getting a specific target item from a targetlist
+
+    POST: Input variables: target_price and product_item_reference_id
+    """
+    if check_session(request.session.session_key):
+        try:
+            # Get customer based on email
+            customer = Customer.objects.get(email=email)
+
+            # Check if customer has a target list otherwise create it
+            target_list, created = TargetList.objects.get_or_create(customer_reference=customer)
+
+            target_item = TargetItem.objects.get(product_item_reference=pk,target_list_reference=target_list)
+
+        except Customer.DoesNotExist:
+            return HttpResponse("No customer found with provided email", status=404)
+
+        except TargetItem.DoesNotExist:
+            return HttpResponse("No target item found",status=404)
+
+        if request.method == 'GET':
+            serializer = TargetItemSerializer(target_item)
+            return JsonResponse(serializer.data)
     else:
         return HttpResponse(status=401)
