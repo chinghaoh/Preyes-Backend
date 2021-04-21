@@ -313,7 +313,7 @@ def register_device(request):
 @csrf_exempt
 def crud_targetitem_targetlist(request, email):
     """
-    Function allows cud actions on target items to targetlist
+    Function allows crud actions on target items to targetlist
 
     POST: Input variables: target_price and product_item_reference_id
     """
@@ -322,25 +322,34 @@ def crud_targetitem_targetlist(request, email):
             # Get customer based on email
             customer = Customer.objects.get(email=email)
 
-            # Get data from request body
-            data = JSONParser().parse(request)
-
             # Check if customer has a target list otherwise create it
             target_list, created = TargetList.objects.get_or_create(customer_reference=customer)
 
-            # Get the product item based on primary key
-            product_item = ProductItem.objects.get(pk=data["product_item_reference_id"])
+            # Get data from request body
+            if request.body:
+                data = JSONParser().parse(request)
 
-            # Make target item object to perform crud actions with
-            target_item = TargetItem(product_item_reference=product_item,
-                                     target_list_reference=target_list, target_price=data["target_price"])
+                # Get the product item based on primary key
+                product_item = ProductItem.objects.get(pk=data["product_item_reference_id"])
+
+                # Make target item object to perform crud actions with
+                target_item = TargetItem(product_item_reference=product_item,
+                                         target_list_reference=target_list, target_price=data["target_price"])
 
         except Customer.DoesNotExist:
-            return HttpResponse(status=404)
+            return HttpResponse("Customer does not exist", status=404)
+
+        except ProductItem.DoesNotExist:
+            return HttpResponse("Product item does not exist",status=404)
+
+
+        if request.method == 'GET':
+            target_item = [item for item in TargetItem.objects.filter(target_list_reference=target_list)]
+            serializer = TargetItemSerializer(target_item, many=True)
+            return JsonResponse(serializer.data, safe=False)
 
         # Add target item to target list
         if request.method == 'POST':
-
             # Check if specific target item already exists
             try:
                 TargetItem.objects.get(product_item_reference=product_item,
