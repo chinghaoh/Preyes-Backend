@@ -120,23 +120,44 @@ class Bol(RetailerAbstract):
 
             # If the response is OK, create or update the objects
             if response.status_code == 200:
+                # TODO: Implement individual monitor for products that are not in the top 100 anymore
+                database_product_items = ProductItem.objects.filter(category=category)
+                database_product_items_ids = [product.product_id for product in database_product_items]
                 all_products = response.json()['products']
+                all_products_ids = [product['id'] for product in all_products]
+                not_in_top_100 = [value for value in database_product_items_ids if value not in all_products_ids]
+                import collections
+                for x in [database_item for database_item, count in collections.Counter(database_product_items_ids).items() if count > 1]:
+                    ProductItem.objects.filter(product_id=x, category=category)[0].delete()
                 for product in all_products:
-                    ProductItem.objects.update_or_create(
-                        product_id=product['id'],
-                        name=product.get('title', 'No title'),
-                        retailer_id=retailer,
-                        description=product.get('shortDescription', 'No description'),
-                        specs_tag=product.get('specsTag', 'No specsTag'),
-                        product_url=product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
-                        image_url=product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
-                        category=category,
-                        product_catalog_reference=catalog,
-                        defaults={
-                            'price': product['offerData']['offers'][0]['price'],
-                            'old_price': ProductItem.objects.get(product_id=product['id']).price
+                    try:
+                        product_item = ProductItem.objects.get(product_id=product['id'], category=category)
+                        update_values = {
+                            "name": product.get('title', 'No title'),
+                            "description": product.get('shortDescription', 'No description'),
+                            "specs_tag": product.get('specsTag', 'No specsTag'),
+                            "product_url": product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
+                            "image_url": product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
+                            "price": product['offerData']['offers'][0]['price'],
+                            "old_price": product_item.price
                         }
-                    )
+                        for key, value in update_values.items():
+                            setattr(product_item, key, value)
+                        product_item.save()
+                    except ProductItem.DoesNotExist:
+                        ProductItem.objects.create(
+                            product_id=product['id'],
+                            name=product.get('title', 'No title'),
+                            retailer_id=retailer,
+                            description=product.get('shortDescription', 'No description'),
+                            specs_tag=product.get('specsTag', 'No specsTag'),
+                            product_url=product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
+                            image_url=product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
+                            category=category,
+                            product_catalog_reference=catalog,
+                            price=product['offerData']['offers'][0]['price'],
+                            old_price=product['offerData']['offers'][0]['price']
+                        )
 
 
 class Retailer(RetailerAbstract):

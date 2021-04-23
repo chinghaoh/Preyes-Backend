@@ -62,6 +62,7 @@ def get_products_retailers():
 
         result = get_products(all_category_ids, retailer, catalog)
         # --------------------------------------------
+        print("Successfully finished CronJob :)")
 
 
 def send_notifications_target_items():
