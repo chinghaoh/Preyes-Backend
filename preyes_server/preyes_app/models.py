@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User as AuthUser
 import environ
 import requests
+from django.utils import timezone
 
 
 # Create your models here.
@@ -33,7 +34,7 @@ class Customer(User):
     def __str__(self):
         return "Email: {}".format(self.email)
 
-    # Delete method is overwritten so that the auth_user linked to the customer is deleted aswell
+    # Delete method is overwritten so that the auth_user linked to the customer is deleted as well
     def delete(self, *args, **kwargs):
         self.auth_user_reference.delete()
         return super(self.__class__, self).delete(*args, **kwargs)
@@ -104,12 +105,52 @@ class Bol(RetailerAbstract):
 
         return categories
 
+    def create_or_update_products(self, product, retailer, category, catalog):
+        try:
+            product_item = ProductItem.objects.get(
+                product_id=product['id'], category=category, retailer_id=retailer
+            )
+            update_values = {
+                "name": product.get('title', 'No title'),
+                "description": product.get('shortDescription', 'No description'),
+                "specs_tag": product.get('specsTag', 'No specsTag'),
+                "product_url": product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
+                "image_url": product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
+                "price": product['offerData']['offers'][0]['price'] if 'offers' in product['offerData'] else product_item.price,
+                "old_price": product_item.price,
+                "last_updated_at": timezone.now()
+            }
+            for key, value in update_values.items():
+                setattr(product_item, key, value)
+            product_item.save()
+        except ProductItem.DoesNotExist:
+            try:
+                ProductItem.objects.create(
+                    product_id=product['id'],
+                    name=product.get('title', 'No title'),
+                    retailer_id=retailer,
+                    description=product.get('shortDescription', 'No description'),
+                    specs_tag=product.get('specsTag', 'No specsTag'),
+                    product_url=product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
+                    image_url=product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
+                    category=category,
+                    product_catalog_reference=catalog,
+                    price=product['offerData']['offers'][0]['price'],
+                    old_price=product['offerData']['offers'][0]['price'],
+                    last_updated_at=timezone.now()
+                )
+            except KeyError:
+                pass
+
     def get_products(self, category_ids, retailer, catalog):
         root_dir = environ.Path(__file__) - 3
         env = environ.Env()
         env_file = str(root_dir.path('.env'))
         env.read_env(env_file)
-
+        # This is the request limit for all bol.com request, after the get_product request and
+        # the regular get_product requests
+        request_limit = 1150
+        not_in_top_100 = []
         for category_id in category_ids:
             category = Category.objects.get(category_id=category_id, retailer_id=retailer)
             response = requests.get(
@@ -120,44 +161,49 @@ class Bol(RetailerAbstract):
 
             # If the response is OK, create or update the objects
             if response.status_code == 200:
-                # TODO: Implement individual monitor for products that are not in the top 100 anymore
-                database_product_items = ProductItem.objects.filter(category=category)
+                database_product_items = ProductItem.objects.filter(category=category, retailer_id=retailer)
                 database_product_items_ids = [product.product_id for product in database_product_items]
                 all_products = response.json()['products']
                 all_products_ids = [product['id'] for product in all_products]
-                not_in_top_100 = [value for value in database_product_items_ids if value not in all_products_ids]
+                not_in_top_100.extend([value for value in database_product_items if value.product_id not in all_products_ids])
+
                 import collections
-                for x in [database_item for database_item, count in collections.Counter(database_product_items_ids).items() if count > 1]:
-                    ProductItem.objects.filter(product_id=x, category=category)[0].delete()
+                for x in [database_item for database_item, count in
+                          collections.Counter(database_product_items_ids).items() if count > 1]:
+                    ProductItem.objects.filter(product_id=x, category=category, retailer_id=retailer)[0].delete()
                 for product in all_products:
+                    self.create_or_update_products(product, retailer, category, catalog)
+        # Sort list ascending with last_updated_at value, to update to products that are not recently updated
+        not_in_top_100 = sorted(not_in_top_100, key=lambda product_item: product_item.last_updated_at)
+        not_in_top_100 = [product_item.product_id for product_item in not_in_top_100]
+        # List with product_ids separated into list of 100, because of product limit of bol.com
+        chunks = [','.join(not_in_top_100[x:x+100]) for x in range(0, len(not_in_top_100), 100)]
+        if len(chunks) > request_limit:
+            chunks = chunks[:request_limit+1]
+        for chunk in chunks:
+            request_url = f"{self.base_url}catalog/v4/products/{chunk}?limit=100&apikey={env('BOL_API_KEY')}&format=json"
+            response = requests.get(url=request_url)
+            if response.status_code == 200:
+                chunk_products = response.json()['products']
+                for chunk_product in chunk_products:
                     try:
-                        product_item = ProductItem.objects.get(product_id=product['id'], category=category)
-                        update_values = {
-                            "name": product.get('title', 'No title'),
-                            "description": product.get('shortDescription', 'No description'),
-                            "specs_tag": product.get('specsTag', 'No specsTag'),
-                            "product_url": product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
-                            "image_url": product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
-                            "price": product['offerData']['offers'][0]['price'],
-                            "old_price": product_item.price
-                        }
-                        for key, value in update_values.items():
-                            setattr(product_item, key, value)
-                        product_item.save()
-                    except ProductItem.DoesNotExist:
-                        ProductItem.objects.create(
-                            product_id=product['id'],
-                            name=product.get('title', 'No title'),
-                            retailer_id=retailer,
-                            description=product.get('shortDescription', 'No description'),
-                            specs_tag=product.get('specsTag', 'No specsTag'),
-                            product_url=product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
-                            image_url=product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
-                            category=category,
-                            product_catalog_reference=catalog,
-                            price=product['offerData']['offers'][0]['price'],
-                            old_price=product['offerData']['offers'][0]['price']
-                        )
+                        remote_category = chunk_product['parentCategoryPaths'][0]['parentCategories'][0]['id']
+                        database_category = Category.objects.get(category_id=remote_category, retailer_id=retailer)
+                    except KeyError as e:
+                        print(f"An error occurred for {chunk_product['id']}: {e}")
+                        continue
+                    except IndexError as e:
+                        print(f"An error occurred for {chunk_product['id']}: {e}")
+                        continue
+                    except Category.DoesNotExist:
+                        print(f"No category found for product not in top 100: {chunk_product['id']}")
+                        continue
+                    self.create_or_update_products(
+                        product=chunk_product,
+                        retailer=retailer,
+                        category=database_category,
+                        catalog=catalog
+                    )
 
 
 class Retailer(RetailerAbstract):
@@ -185,6 +231,7 @@ class ProductItem(Product):
     image_url = models.URLField(max_length=2048, null=False, blank=True)
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, default=None, null=True)
     product_catalog_reference = models.ForeignKey('ProductCatalog', on_delete=models.CASCADE, default=None)
+    last_updated_at = models.DateTimeField(null=False, default=timezone.now)
 
     def __str__(self):
         return "Product: {} Retailer: {}".format(self.name, self.retailer_id.name)
@@ -202,10 +249,10 @@ class TargetItem(models.Model):
     product_item_reference = models.ForeignKey('ProductItem', on_delete=models.CASCADE, default=None)
     target_price = models.DecimalField(null=False, decimal_places=2, max_digits=19, blank=True)
     target_price_type = models.CharField(null=False, choices=(
-            ('fixed', 'Fixed'),
-            ('percentage', 'Percentage'),
-            ('all_discount', 'All Discounts')
-        ), max_length=20, default='fixed')
+        ('fixed', 'Fixed'),
+        ('percentage', 'Percentage'),
+        ('all_discount', 'All Discounts')
+    ), max_length=20, default='fixed')
     target_list_reference = models.ForeignKey('TargetList', on_delete=models.CASCADE, default=None)
 
     def __str__(self):
