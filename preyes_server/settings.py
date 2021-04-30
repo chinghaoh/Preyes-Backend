@@ -30,7 +30,7 @@ env.read_env(env_file)
 SECRET_KEY = env('SECRET_KEY')
 
 
-django.setup()
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -173,3 +173,5 @@ STATICFILES_DIRS = (
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 prod_db = dj_database_url.config(conn_max_age=500)
 DATABASES['default'].update(prod_db)
+
+django.setup()
