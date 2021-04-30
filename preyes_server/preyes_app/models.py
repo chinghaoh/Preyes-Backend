@@ -1,18 +1,18 @@
-from django.db import models as django_models
+from django.db import models
 from django.contrib.auth.models import User as AuthUser
 import environ
 import requests
 from django.utils import timezone
 
 
-# Create your django_models here.
-class User(django_models.Model):
-    first_name = django_models.CharField(max_length=50, null=False)
-    last_name = django_models.CharField(max_length=50, null=False)
-    insertion = django_models.CharField(max_length=30, null=True, blank=True)
-    email = django_models.EmailField(max_length=100, null=False)
-    notifications = django_models.BooleanField(default=False)
-    birth_date = django_models.DateField(null=False)
+# Create your models here.
+class User(models.Model):
+    first_name = models.CharField(max_length=50, null=False)
+    last_name = models.CharField(max_length=50, null=False)
+    insertion = models.CharField(max_length=30, null=True, blank=True)
+    email = models.EmailField(max_length=100, null=False)
+    notifications = models.BooleanField(default=False)
+    birth_date = models.DateField(null=False)
 
     class Meta:
         abstract = True
@@ -28,8 +28,8 @@ class Admin(User):
 
 
 class Customer(User):
-    category_preference = django_models.ManyToManyField('Category')
-    auth_user_reference = django_models.OneToOneField(AuthUser, on_delete=django_models.CASCADE, default=None)
+    category_preference = models.ManyToManyField('Category')
+    auth_user_reference = models.OneToOneField(AuthUser, on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return "Email: {}".format(self.email)
@@ -40,9 +40,9 @@ class Customer(User):
         return super(self.__class__, self).delete(*args, **kwargs)
 
 
-class RetailerAbstract(django_models.Model):
-    name = django_models.CharField(max_length=50, null=False)
-    base_url = django_models.CharField(max_length=100, null=False)
+class RetailerAbstract(models.Model):
+    name = models.CharField(max_length=50, null=False)
+    base_url = models.CharField(max_length=100, null=False)
 
     class Meta:
         abstract = True
@@ -217,74 +217,74 @@ class Retailer(RetailerAbstract):
         return "Retailer: {}".format(self.name)
 
 
-class Product(django_models.Model):
-    name = django_models.TextField(null=False)
+class Product(models.Model):
+    name = models.TextField(null=False)
 
     class Meta:
         abstract = True
 
 
 class ProductItem(Product):
-    retailer_id = django_models.ForeignKey('Retailer', on_delete=django_models.CASCADE, default=None)
-    price = django_models.DecimalField(null=False, decimal_places=2, max_digits=19)
-    product_id = django_models.CharField(max_length=255, null=False, blank=True, default='0')
-    old_price = django_models.DecimalField(null=False, decimal_places=2, max_digits=19, default=0)
-    description = django_models.TextField(null=False, blank=True)
-    specs_tag = django_models.TextField(null=False, blank=True)
-    product_url = django_models.URLField(max_length=2048, null=False, blank=True)
-    image_url = django_models.URLField(max_length=2048, null=False, blank=True)
-    category = django_models.ForeignKey('Category', on_delete=django_models.SET_NULL, default=None, null=True)
-    product_catalog_reference = django_models.ForeignKey('ProductCatalog', on_delete=django_models.CASCADE, default=None)
-    last_updated_at = django_models.DateTimeField(null=False, default=timezone.now)
-    in_stock = django_models.BooleanField(null=False, default=True)
+    retailer_id = models.ForeignKey('Retailer', on_delete=models.CASCADE, default=None)
+    price = models.DecimalField(null=False, decimal_places=2, max_digits=19)
+    product_id = models.CharField(max_length=255, null=False, blank=True, default='0')
+    old_price = models.DecimalField(null=False, decimal_places=2, max_digits=19, default=0)
+    description = models.TextField(null=False, blank=True)
+    specs_tag = models.TextField(null=False, blank=True)
+    product_url = models.URLField(max_length=2048, null=False, blank=True)
+    image_url = models.URLField(max_length=2048, null=False, blank=True)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, default=None, null=True)
+    product_catalog_reference = models.ForeignKey('ProductCatalog', on_delete=models.CASCADE, default=None)
+    last_updated_at = models.DateTimeField(null=False, default=timezone.now)
+    in_stock = models.BooleanField(null=False, default=True)
 
     def __str__(self):
         return "Product: {} Retailer: {}".format(self.name, self.retailer_id.name)
 
 
-class ProductCatalog(django_models.Model):
-    name = django_models.CharField(max_length=100, default="preyes catalog")
+class ProductCatalog(models.Model):
+    name = models.CharField(max_length=100, default="preyes catalog")
     pass
 
     def __str__(self):
         return "Name: {}".format(self.name)
 
 
-class TargetItem(django_models.Model):
-    product_item_reference = django_models.ForeignKey('ProductItem', on_delete=django_models.CASCADE, default=None)
-    target_price = django_models.DecimalField(null=False, decimal_places=2, max_digits=19, blank=True)
-    target_price_type = django_models.CharField(null=False, choices=(
+class TargetItem(models.Model):
+    product_item_reference = models.ForeignKey('ProductItem', on_delete=models.CASCADE, default=None)
+    target_price = models.DecimalField(null=False, decimal_places=2, max_digits=19, blank=True)
+    target_price_type = models.CharField(null=False, choices=(
         ('fixed', 'Fixed'),
         ('percentage', 'Percentage'),
         ('all_discount', 'All Discounts')
     ), max_length=20, default='fixed')
-    target_list_reference = django_models.ForeignKey('TargetList', on_delete=django_models.CASCADE, default=None)
+    target_list_reference = models.ForeignKey('TargetList', on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return "Product: {} Email: {}".format(self.product_item_reference.name,
                                               self.target_list_reference.customer_reference.email)
 
 
-class TargetList(django_models.Model):
-    customer_reference = django_models.OneToOneField('Customer', on_delete=django_models.CASCADE, default=None)
+class TargetList(models.Model):
+    customer_reference = models.OneToOneField('Customer', on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return "Email: {}".format(self.customer_reference.email)
 
 
-class Notification(django_models.Model):
-    message = django_models.CharField(max_length=250, null=False)
-    date = django_models.DateField(null=False)
-    time_stamp = django_models.DateTimeField(null=False)
+class Notification(models.Model):
+    message = models.CharField(max_length=250, null=False)
+    date = models.DateField(null=False)
+    time_stamp = models.DateTimeField(null=False)
 
     class Meta:
         abstract = True
 
 
 class ProductNotification(Notification):
-    target_item = django_models.OneToOneField(
+    target_item = models.OneToOneField(
         'TargetItem',
-        on_delete=django_models.CASCADE,
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
@@ -292,7 +292,7 @@ class ProductNotification(Notification):
                                                   self.target_item.target_list_reference.customer_reference.email)
 
 
-class Notify(django_models.Model):
+class Notify(models.Model):
     class Meta:
         abstract = True
 
@@ -300,20 +300,20 @@ class Notify(django_models.Model):
         pass
 
 
-class Category(django_models.Model):
-    category_id = django_models.CharField(max_length=250, null=False, default=0, primary_key=True)
-    name = django_models.CharField(max_length=250, null=False)
-    retailer_id = django_models.ForeignKey('Retailer', on_delete=django_models.CASCADE, default=None)
+class Category(models.Model):
+    category_id = models.CharField(max_length=250, null=False, default=0, primary_key=True)
+    name = models.CharField(max_length=250, null=False)
+    retailer_id = models.ForeignKey('Retailer', on_delete=models.CASCADE, default=None)
 
     def __str__(self):
         return "Category name: {}".format(self.name)
 
 
-class PasswordChangeRequest(django_models.Model):
-    requested_at = django_models.DateTimeField(auto_now_add=True, null=False)
-    email = django_models.ForeignKey('Customer', on_delete=django_models.CASCADE, default=None)
-    GUID = django_models.CharField(max_length=250, null=False)
-    used = django_models.BooleanField(default=False)
+class PasswordChangeRequest(models.Model):
+    requested_at = models.DateTimeField(auto_now_add=True, null=False)
+    email = models.ForeignKey('Customer', on_delete=models.CASCADE, default=None)
+    GUID = models.CharField(max_length=250, null=False)
+    used = models.BooleanField(default=False)
 
     def __str__(self):
         return f'Requested at: {self.requested_at} by the user: {self.email}'
