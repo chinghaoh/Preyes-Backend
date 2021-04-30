@@ -116,9 +116,11 @@ class Bol(RetailerAbstract):
                 "specs_tag": product.get('specsTag', 'No specsTag'),
                 "product_url": product['urls'][1]['value'] if 'urls' in product.keys() else 'No URLS',
                 "image_url": product['images'][2]['url'] if 'images' in product.keys() else 'No image URL',
-                "price": product['offerData']['offers'][0]['price'] if 'offers' in product['offerData'] else product_item.price,
+                "price": product['offerData']['offers'][0]['price'] if 'offers' in product[
+                    'offerData'] else product_item.price,
                 "old_price": product_item.price,
-                "last_updated_at": timezone.now()
+                "last_updated_at": timezone.now(),
+                "in_stock": True if 'offers' in product['offerData'] else False
             }
             for key, value in update_values.items():
                 setattr(product_item, key, value)
@@ -137,7 +139,8 @@ class Bol(RetailerAbstract):
                     product_catalog_reference=catalog,
                     price=product['offerData']['offers'][0]['price'],
                     old_price=product['offerData']['offers'][0]['price'],
-                    last_updated_at=timezone.now()
+                    last_updated_at=timezone.now(),
+                    in_stock=True if 'offers' in product['offerData'] else False
                 )
             except KeyError:
                 pass
@@ -165,7 +168,8 @@ class Bol(RetailerAbstract):
                 database_product_items_ids = [product.product_id for product in database_product_items]
                 all_products = response.json()['products']
                 all_products_ids = [product['id'] for product in all_products]
-                not_in_top_100.extend([value for value in database_product_items if value.product_id not in all_products_ids])
+                not_in_top_100.extend(
+                    [value for value in database_product_items if value.product_id not in all_products_ids])
 
                 import collections
                 for x in [database_item for database_item, count in
@@ -177,9 +181,9 @@ class Bol(RetailerAbstract):
         not_in_top_100 = sorted(not_in_top_100, key=lambda product_item: product_item.last_updated_at)
         not_in_top_100 = [product_item.product_id for product_item in not_in_top_100]
         # List with product_ids separated into list of 100, because of product limit of bol.com
-        chunks = [','.join(not_in_top_100[x:x+100]) for x in range(0, len(not_in_top_100), 100)]
+        chunks = [','.join(not_in_top_100[x:x + 100]) for x in range(0, len(not_in_top_100), 100)]
         if len(chunks) > request_limit:
-            chunks = chunks[:request_limit+1]
+            chunks = chunks[:request_limit + 1]
         for chunk in chunks:
             request_url = f"{self.base_url}catalog/v4/products/{chunk}?limit=100&apikey={env('BOL_API_KEY')}&format=json"
             response = requests.get(url=request_url)
@@ -232,6 +236,7 @@ class ProductItem(Product):
     category = models.ForeignKey('Category', on_delete=models.SET_NULL, default=None, null=True)
     product_catalog_reference = models.ForeignKey('ProductCatalog', on_delete=models.CASCADE, default=None)
     last_updated_at = models.DateTimeField(null=False, default=timezone.now)
+    in_stock = models.BooleanField(null=False, default=True)
 
     def __str__(self):
         return "Product: {} Retailer: {}".format(self.name, self.retailer_id.name)
