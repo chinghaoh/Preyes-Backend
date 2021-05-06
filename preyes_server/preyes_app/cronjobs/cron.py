@@ -1,3 +1,6 @@
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'preyes_server.settings')
+
 import django
 django.setup()
 
