@@ -1,3 +1,5 @@
+import django
+django.setup()
 from preyes_server.preyes_app.models import *
 from preyes_server.preyes_app.notify import notify
 from apscheduler.schedulers.background import BackgroundScheduler
