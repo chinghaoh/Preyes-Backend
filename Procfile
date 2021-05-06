@@ -1,2 +1,2 @@
 web: gunicorn preyes_server.wsgi --log-file -
-clock: python preyes_server.preyes_app.cronjobs.cron
+clock: python -m preyes_server.preyes_app.cronjobs.cron
