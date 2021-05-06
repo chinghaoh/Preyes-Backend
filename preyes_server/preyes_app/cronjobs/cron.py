@@ -1,19 +1,23 @@
 import os
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'preyes_server.settings')
 
 import django
-django.setup()
 
+django.setup()
+print('Django Set up Success')
 from preyes_server.preyes_app.models import *
 from preyes_server.preyes_app.notify import notify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
+print('Set up')
 scheduler = BackgroundScheduler()
 trigger_test = CronTrigger.from_crontab('* * * * *')
 trigger_categories = CronTrigger.from_crontab('0 1 * * *')
 trigger_products = CronTrigger.from_crontab('0 */1 * * *')
 trigger_send_notification = CronTrigger.from_crontab('15 */1 * * *')
+print('Set up success')
 
 
 def test_cron():
@@ -108,8 +112,10 @@ def send_notifications_target_items():
             notify(user_id, title, body, data=None, sound=True)
 
 
+print('Scheduler adding Jobs')
 scheduler.add_job(func=test_cron, trigger=trigger_test)
 scheduler.add_job(get_categories_retailers, trigger_categories)
 scheduler.add_job(get_products_retailers, trigger_products)
 scheduler.add_job(send_notifications_target_items, trigger_send_notification)
 scheduler.start()
+print('Scheduler adding Jobs success')
