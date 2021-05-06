@@ -1,11 +1,12 @@
 import django
 django.setup()
+
 from preyes_server.preyes_app.models import *
 from preyes_server.preyes_app.notify import notify
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 
-scheduler = BackgroundScheduler
+scheduler = BackgroundScheduler()
 trigger_test = CronTrigger.from_crontab('* * * * *')
 trigger_categories = CronTrigger.from_crontab('0 1 * * *')
 trigger_products = CronTrigger.from_crontab('0 */1 * * *')
@@ -103,7 +104,8 @@ def send_notifications_target_items():
             body = f"Click on the link to buy your wanted product: {target_item.product_item_reference.product_url}"
             notify(user_id, title, body, data=None, sound=True)
 
-scheduler.add_job(test_cron, trigger_test)
+
+scheduler.add_job(func=test_cron, trigger=trigger_test)
 scheduler.add_job(get_categories_retailers, trigger_categories)
 scheduler.add_job(get_products_retailers, trigger_products)
 scheduler.add_job(send_notifications_target_items, trigger_send_notification)
