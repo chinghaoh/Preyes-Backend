@@ -8,21 +8,16 @@ django.setup()
 print('Django Set up Success')
 from preyes_server.preyes_app.models import *
 from preyes_server.preyes_app.notify import notify
-from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
 from apscheduler.triggers.cron import CronTrigger
 
 print('Set up')
-scheduler = BackgroundScheduler()
+scheduler = BlockingScheduler(daemon=True)
 
-trigger_test = CronTrigger.from_crontab('* * * * *')
 trigger_categories = CronTrigger.from_crontab('0 1 * * *')
 trigger_products = CronTrigger.from_crontab('15 */1 * * *')
 trigger_send_notification = CronTrigger.from_crontab('45 */1 * * *')
 print('Set up success')
-
-
-def test_cron():
-    print("I'm working!")
 
 
 def get_categories_retailers():
@@ -48,6 +43,7 @@ def get_categories_retailers():
 
         # ------------Save categories------------
         for category_id, value in categories.items():
+            print(f'Processing {category_id} for {retailer}')
             try:
                 category = Category.objects.get(name=value['name'])
                 if category.category_id != category_id:
@@ -61,6 +57,7 @@ def get_categories_retailers():
                     retailer_id=retailer
                 )
         # ------------------------------
+    print('Done with getting categories')
 
 
 def get_products_retailers():
@@ -85,7 +82,7 @@ def get_products_retailers():
 
         result = get_products(all_category_ids, retailer, catalog)
         # --------------------------------------------
-        print("Successfully finished CronJob :)")
+    print("Successfully finished CronJob :)")
 
 
 def send_notifications_target_items():
@@ -114,9 +111,8 @@ def send_notifications_target_items():
 
 
 print('Scheduler adding Jobs')
+scheduler.add_job(get_categories_retailers, trigger_categories)
+scheduler.add_job(get_products_retailers, trigger_products)
+scheduler.add_job(send_notifications_target_items, trigger_send_notification)
 scheduler.start()
-scheduler.add_job(func=test_cron, trigger=trigger_test)
-# scheduler.add_job(get_categories_retailers, trigger_categories)
-# scheduler.add_job(get_products_retailers, trigger_products)
-# scheduler.add_job(send_notifications_target_items, trigger_send_notification)
 print('Scheduler adding Jobs success')
