@@ -25,6 +25,8 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TargetItemSerializer(serializers.ModelSerializer):
+    product_item_reference = ProductItemSerializer(read_only=True)
+
     class Meta:
         model = TargetItem
         fields = ['product_item_reference', 'target_price', 'target_list_reference']
