@@ -333,8 +333,12 @@ def crud_targetitem_targetlist(request, email):
                 product_item = ProductItem.objects.get(pk=data["product_item_reference_id"])
 
                 # Make target item object to perform crud actions with
-                target_item = TargetItem(product_item_reference=product_item,
-                                         target_list_reference=target_list, target_price=data["target_price"])
+                target_item = TargetItem(
+                    product_item_reference=product_item,
+                    target_list_reference=target_list,
+                    target_price=data['target_price'],
+                    target_price_type=data['target_type']
+                )
 
         except Customer.DoesNotExist:
             return HttpResponse("Customer does not exist", status=404)
@@ -355,7 +359,6 @@ def crud_targetitem_targetlist(request, email):
                                        target_list_reference=target_list)
                 return HttpResponse("Specific target item already exists")
             except TargetItem.DoesNotExist:
-
                 # if target item does not exist yet,create it
                 target_item_serializer = TargetItemSerializer(target_item, data=data, partial=True)
                 if target_item_serializer.is_valid(raise_exception=True):
@@ -367,7 +370,9 @@ def crud_targetitem_targetlist(request, email):
         if request.method == 'PUT':
             target_item = TargetItem.objects.filter(product_item_reference=data["product_item_reference_id"],
                                                     target_list_reference=target_list).update(
-                target_price=data["target_price"])
+                target_price=data['target_price'],
+                target_price_type=data['target_type']
+            )
             return HttpResponse(target_item)
 
         # delete target item from a target list

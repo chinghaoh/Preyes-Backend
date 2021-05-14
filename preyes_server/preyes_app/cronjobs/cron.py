@@ -95,7 +95,7 @@ def send_notifications_target_items():
         send_notification = False
         product_item = target_item.product_item_reference
         target_price_type = target_item.target_price_type
-        if target_price_type == 'fixed' and target_item.target_price <= product_item.price:
+        if target_price_type == 'fixed' and target_item.target_price >= product_item.price:
             send_notification = True
         elif target_price_type == 'percentage' and calculate_percentage_difference(product_item.price,
                                                                                    product_item.old_price) >= target_item.target_price:
