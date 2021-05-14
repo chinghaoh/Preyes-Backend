@@ -340,12 +340,11 @@ def crud_targetitem_targetlist(request, email):
             return HttpResponse("Customer does not exist", status=404)
 
         except ProductItem.DoesNotExist:
-            return HttpResponse("Product item does not exist",status=404)
-
+            return HttpResponse("Product item does not exist", status=404)
 
         if request.method == 'GET':
-            target_item = [item for item in TargetItem.objects.filter(target_list_reference=target_list)]
-            serializer = TargetItemSerializer(target_item, many=True)
+            target_items = [item for item in TargetItem.objects.filter(target_list_reference=target_list)]
+            serializer = TargetItemSerializer(target_items, many=True)
             return JsonResponse(serializer.data, safe=False)
 
         # Add target item to target list
@@ -395,13 +394,13 @@ def get_targetitem_targetlist(request, email, pk):
             # Check if customer has a target list otherwise create it
             target_list, created = TargetList.objects.get_or_create(customer_reference=customer)
 
-            target_item = TargetItem.objects.get(product_item_reference=pk,target_list_reference=target_list)
+            target_item = TargetItem.objects.get(product_item_reference=pk, target_list_reference=target_list)
 
         except Customer.DoesNotExist:
             return HttpResponse("No customer found with provided email", status=404)
 
         except TargetItem.DoesNotExist:
-            return HttpResponse("No target item found",status=404)
+            return HttpResponse("No target item found", status=404)
 
         if request.method == 'GET':
             serializer = TargetItemSerializer(target_item)
