@@ -7,7 +7,9 @@
    2. [Problems faced during development & Future features](#problems-and-future-features)
 2. [Installation](#installation)
 3. [Endpoints](#endpoints)
-   1.[Customer](#customer-endpoint)    
+   1. [Customer](#customer-endpoint)
+   2. [Customer-details](#customer-details-endpoint)
+   3. [Forgot-password](#forgot-password)     
 5. [Credits](#credits)
 6. [Sources](#sources)
 7. [License](#license)
@@ -60,7 +62,7 @@ This endpoint returns all customers if the person who requests this has a sessio
 Params: username(string), password(string), email (string), first_name(string), last_name(string)
 By giving the following params to the endpoint, an user will be created for the app
 
-### Customer details
+### Customer details <a name="customer-details-endpoint"/>
 url: preyesserver.herokuapp.com/<int:pk>/
 
 #### GET request
@@ -75,7 +77,7 @@ To change the fields of a user you can give some optional fields alongside the p
 Params: pk(int)
 This endpoint deletes a customer with the given pk
 
-### Forgot password
+### Forgot pass[Forgot-password] <a name="forgot-password"/>
 url: preyesserver.herokuapp.com/forgot_password/
 
 #### POST request
