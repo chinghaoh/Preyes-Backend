@@ -202,7 +202,7 @@ Params: email(string),pk(int), target_price(double)
 Updates the target_price of a target_item in a users targetlist
 
 
-### Device/register <a name="devcuce-register"/>
+### Device/register <a name="device-register"/>
 url: preyesserver.herokuapp.com/device/register/
 
 #### POST request
