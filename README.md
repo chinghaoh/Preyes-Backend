@@ -210,6 +210,11 @@ Params: registration_id(int), id
 creates and registers a new device for the user based on his own id and registration_id for his device
 
 ## Credits <a name="credits" />
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 ## Sources <a name="sources" />
 * Daftari, S. (2020, 30 april). Top 10 Pros of using Django framework for back-end web development. 10 Reasons Why Django Web Development with Python is Most Popular for Backend Web Development. https://www.kelltontech.com/kellton-tech-blog/why-django-web-development-with-python-for-backend-web-development
