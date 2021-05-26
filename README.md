@@ -9,7 +9,18 @@
 3. [Endpoints](#endpoints)
    1. [Customer](#customer-endpoint)
    2. [Customer-details](#customer-details-endpoint)
-   3. [Forgot-password](#forgot-password)     
+   3. [Forgot-password](#forgot-password)    
+   4. [Reset-password](#reset-password) 
+   5. [Login](#login)
+   6. [Logout](#logout)
+   7. [Product-items](#product-items)
+   8. [Product-items-details](#product-items-details)
+   9. [Product-items-category](#product-items-category)
+   10. [Categories](#categories)
+   11. [Categories-details](#categories-details)
+   12. [Targetlist](#targetlist)
+   13. [Targetlist-crud](#targetlist-crud)
+   14. [Device-register](#device-register)
 5. [Credits](#credits)
 6. [Sources](#sources)
 7. [License](#license)
@@ -77,42 +88,42 @@ To change the fields of a user you can give some optional fields alongside the p
 Params: pk(int)
 This endpoint deletes a customer with the given pk
 
-### Forgot pass[Forgot-password] <a name="forgot-password"/>
+### Forgot password <a name="forgot-password"/>
 url: preyesserver.herokuapp.com/forgot_password/
 
 #### POST request
 Params: email(string)
 With this endpoint user's get send an email in which they get redirected to  reset their password. 
 
-### Reset password
+### Reset password  <a name="reset-password"/>
 url: preyesserver.herokuapp.com/reset_password/
 
 #### POST request
 Params: GUID(string), password(string)
 With this endpoint user's can create a new password based on the GUID if that value is valid
 
-### Login
+### Login <a name="login"/>
 url: preyesserver.herokuapp.com/login/
 
 #### POST request
 Params: username (string), password(string)
 With this endpoint a registered user can login to his/her account by giving their username and password
 
-### Logout
+### Logout <a name="login"/>
 url: preyesserver.herokuapp.com/logout/
 
 #### POST request
 Params: None
 With this endpoint an user is logged out based on his given session key
 
-### Product_items
+### Product_items <a name="product-items"/>
 url: preyesserver.herokuapp.com/product_items/
 
 #### GET request
 Params: None
 Returns all product_items if the session key is valid
 
-### Product_items details
+### Product_items details  <a name="product-items-details"/>
 url: preyesserver.herokuapp.com/product_items/<int:pk>/
 
 #### GET request
@@ -127,21 +138,21 @@ With this endpoint you can change the values of the given optional params
 Params: pk(int)
 Deletes a product_item based on pk
 
-### Product_items based on category
+### Product_items based on category <a name="product-items-category"/>
 url: preyesserver.herokuapp.com/product_items/category/
 
 #### GET request
 Params: in url -> customer_id(int), categories(string)
 Returns product items based on preferred categories of a user or a specific category given in the url
 
-### categories
+### categories <a name="categories"/>
 url: preyesserver.herokuapp.com/categories/
 
 #### GET request
 Params:None
 Returns all categories if session is valid
 
-### category details
+### category details <a name="categories-details"/>
 url: preyesserver.herokuapp.com/categories/<int:pk>/
 
 #### GET request
@@ -156,7 +167,7 @@ Updates the name and retailer_id of the category
 Params: pk(int)
 Deletes category with the given pk
 
-### Targetlist of user
+### Targetlist of user <a name="targetlist"/>
 url: preyesserver.herokuapp.com/targetlist/<str:email>/<int:pk>/
 
 #### GET request
@@ -167,7 +178,7 @@ Returns targetlist of a user based on his email and his target_item if the pk of
 Params: email(string),pk(int), target_price(double)
 Updates the target_price of a target_item in a users targetlist
 
-### crud on target_itemns in Targetlist of user
+### crud on target_itemns in Targetlist of user <a name="targetlist-crud"/>
 url: preyesserver.herokuapp.com/targetlist/<str:email>/
 
 #### GET request
@@ -191,7 +202,7 @@ Params: email(string),pk(int), target_price(double)
 Updates the target_price of a target_item in a users targetlist
 
 
-### Device/register
+### Device/register <a name="devcuce-register"/>
 url: preyesserver.herokuapp.com/device/register/
 
 #### POST request
