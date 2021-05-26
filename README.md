@@ -217,6 +217,7 @@ creates and registers a new device for the user based on his own id and registra
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 - [Chinghao Hsu](https://github.com/chinghaoh)
 - [Didier Guyon](https://github.com/DidierGuyon)
+- [Ian Man](https://github.com/phakhee)
 
 ## Sources <a name="sources" />
 * Daftari, S. (2020, 30 april). Top 10 Pros of using Django framework for back-end web development. 10 Reasons Why Django Web Development with Python is Most Popular for Backend Web Development. https://www.kelltontech.com/kellton-tech-blog/why-django-web-development-with-python-for-backend-web-development
