@@ -109,7 +109,7 @@ url: preyesserver.herokuapp.com/login/
 Params: username (string), password(string)
 With this endpoint a registered user can login to his/her account by giving their username and password
 
-### Logout <a name="login"/>
+### Logout <a name="logout"/>
 url: preyesserver.herokuapp.com/logout/
 
 #### POST request
