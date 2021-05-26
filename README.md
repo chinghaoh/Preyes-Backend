@@ -42,7 +42,158 @@ The application currently is only for Android, but we would like to be able to m
 
 ## Endpoints <a name="endpoints" />
 
+For the endpoints we use the following base url
 
+preyesserver.herokuapp.com
+
+With this base url the following paths are used as endpoint for requests
+
+### Customer
+url: preyesserver.herokuapp.com/customers/
+
+#### GET request
+Params: None
+This endpoint returns all customers if the person who requests this has a session key. An session key can be obtained by login in first.
+
+#### POST request
+Params: username(string), password(string), email (string), first_name(string), last_name(string)
+By giving the following params to the endpoint, an user will be created for the app
+
+### Customer details
+url: preyesserver.herokuapp.com/<int:pk>/
+
+#### GET request
+Params: pk(int)
+Returnsdetails of a customer based on pk
+
+#### PUT request
+Params: pk(int), Optional username(string), password(string), email (string), first_name(string), last_name(string)
+To change the fields of a user you can give some optional fields alongside the pk to perform changes.
+
+#### DELETE request
+Params: pk(int)
+This endpoint deletes a customer with the given pk
+
+### Forgot password
+url: preyesserver.herokuapp.com/forgot_password/
+
+#### POST request
+Params: email(string)
+With this endpoint user's get send an email in which they get redirected to  reset their password. 
+
+### Reset password
+url: preyesserver.herokuapp.com/reset_password/
+
+#### POST request
+Params: GUID(string), password(string)
+With this endpoint user's can create a new password based on the GUID if that value is valid
+
+### Login
+url: preyesserver.herokuapp.com/login/
+
+#### POST request
+Params: username (string), password(string)
+With this endpoint a registered user can login to his/her account by giving their username and password
+
+### Logout
+url: preyesserver.herokuapp.com/logout/
+
+#### POST request
+Params: None
+With this endpoint an user is logged out based on his given session key
+
+### Product_items
+url: preyesserver.herokuapp.com/product_items/
+
+#### GET request
+Params: None
+Returns all product_items if the session key is valid
+
+### Product_items details
+url: preyesserver.herokuapp.com/product_items/<int:pk>/
+
+#### GET request
+Params: pk(int)
+Returns the details of a product_item based on primary key
+
+#### PUT request
+Params: pk(int), optional name(string), description(string), specs_tag(string), product_url(string), image_url(string), price(double), old_price(double), last_updated_at(datetime), in_stock(boolean)
+With this endpoint you can change the values of the given optional params
+
+#### DELETE request
+Params: pk(int)
+Deletes a product_item based on pk
+
+### Product_items based on category
+url: preyesserver.herokuapp.com/product_items/category/
+
+#### GET request
+Params: in url -> customer_id(int), categories(string)
+Returns product items based on preferred categories of a user or a specific category given in the url
+
+### categories
+url: preyesserver.herokuapp.com/categories/
+
+#### GET request
+Params:None
+Returns all categories if session is valid
+
+### category details
+url: preyesserver.herokuapp.com/categories/<int:pk>/
+
+#### GET request
+Params: pk(int)
+Returns category based on pk if session is valid
+
+#### PUT request
+Params: pk(int), name(string), retailer_id(foreign key Retailer)
+Updates the name and retailer_id of the category
+
+#### DELETE request
+Params: pk(int)
+Deletes category with the given pk
+
+### Targetlist of user
+url: preyesserver.herokuapp.com/targetlist/<str:email>/<int:pk>/
+
+#### GET request
+Params: email(string),pk(int)
+Returns targetlist of a user based on his email and his target_item if the pk of a product_item is given
+
+#### POST request
+Params: email(string),pk(int), target_price(double)
+Updates the target_price of a target_item in a users targetlist
+
+### crud on target_itemns in Targetlist of user
+url: preyesserver.herokuapp.com/targetlist/<str:email>/
+
+#### GET request
+Params: email(string)
+Returns all target_items in the target_list of a user
+
+#### POST request
+Params: email(string), target_price(double), product_item_reference_id(int),target_type(string)
+Creates a new target_item with a target_price and target_type for a user in his target_list
+
+#### PUT request
+Params: email(string), target_price(double), product_item_reference_id(int),target_type(string)
+Updates the target_price or target_type of a  target_item for a user in his target_list
+
+#### PUT request
+Params: email(string), product_item_reference_id(int)
+Deletes a target_item for a user in his target_list based on the product_item_reference_id
+
+#### POST request
+Params: email(string),pk(int), target_price(double)
+Updates the target_price of a target_item in a users targetlist
+
+
+### Device/register
+url: preyesserver.herokuapp.com/device/register/
+
+#### POST request
+Params: registration_id(int), id
+creates and registers a new device for the user based on his own id and registration_id for his device
 
 ## Credits <a name="credits" />
 
