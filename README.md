@@ -7,9 +7,10 @@
    2. [Problems faced during development & Future features](#problems-and-future-features)
 2. [Installation](#installation)
 3. [Endpoints](#endpoints)
-4. [Credits](#credits)
-5. [Sources](#sources)
-6. [License](#license)
+   1.[Customer](#customer-endpoint)    
+5. [Credits](#credits)
+6. [Sources](#sources)
+7. [License](#license)
 
 ## Description <a name="description" />
 ### What our application does <a name="application-function" />
@@ -48,7 +49,7 @@ preyesserver.herokuapp.com
 
 With this base url the following paths are used as endpoint for requests
 
-### Customer
+### Customer <a name="customer-endpoint" />
 url: preyesserver.herokuapp.com/customers/
 
 #### GET request
