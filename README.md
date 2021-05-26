@@ -50,7 +50,15 @@ The application currently is only for Android, but we would like to be able to m
 
 
 ## Installation <a name="installation" />
+**Prequisites**  
+* Python 3.8  
+* Django 3.1.6
 
+**Steps**
+1. `git clone https://github.com/chinghaoh/Preyes-Backend.git`
+2. `pip install -r requirements.txt`
+3. Create an .env file and ask one of the admin for the data to put in the .env file
+4. In the project terminal execute `python manage.py runserver`
 
 
 ## Endpoints <a name="endpoints" />
