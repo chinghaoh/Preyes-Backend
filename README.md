@@ -23,7 +23,6 @@
    14. [Device-register](#device-register)
 5. [Credits](#credits)
 6. [Sources](#sources)
-7. [License](#license)
 
 ## Description <a name="description" />
 ### What our application does <a name="application-function" />
@@ -222,6 +221,3 @@ creates and registers a new device for the user based on his own id and registra
 ## Sources <a name="sources" />
 * Daftari, S. (2020, 30 april). Top 10 Pros of using Django framework for back-end web development. 10 Reasons Why Django Web Development with Python is Most Popular for Backend Web Development. https://www.kelltontech.com/kellton-tech-blog/why-django-web-development-with-python-for-backend-web-development
 * Django Stars. (2020, 6 november). Top 6 Django Compatible Hosting Services. Django Stars Blog. https://djangostars.com/blog/top-django-compatible-hosting-services/
-
-
-## License <a name="license" />
