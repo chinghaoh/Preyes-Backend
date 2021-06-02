@@ -332,14 +332,6 @@ def crud_targetitem_targetlist(request, email):
                 # Get the product item based on primary key
                 product_item = ProductItem.objects.get(pk=data["product_item_reference_id"])
 
-                # Make target item object to perform crud actions with
-                target_item = TargetItem(
-                    product_item_reference=product_item,
-                    target_list_reference=target_list,
-                    target_price=data['target_price'],
-                    target_price_type=data['target_type']
-                )
-
         except Customer.DoesNotExist:
             return HttpResponse("Customer does not exist", status=404)
 
@@ -353,11 +345,19 @@ def crud_targetitem_targetlist(request, email):
 
         # Add target item to target list
         if request.method == 'POST':
-            # Check if specific target item already exists
-            try:
+            try:    
+                # Make target item object to perform crud actions with
+                target_item = TargetItem(
+                    product_item_reference=product_item,
+                    target_list_reference=target_list,
+                    target_price=data['target_price'],
+                    target_price_type=data['target_type']
+                )
+                # Check if specific target item already exists
                 TargetItem.objects.get(product_item_reference=product_item,
                                        target_list_reference=target_list)
                 return HttpResponse("Specific target item already exists")
+            
             except TargetItem.DoesNotExist:
                 # if target item does not exist yet,create it
                 target_item_serializer = TargetItemSerializer(target_item, data=data, partial=True)
