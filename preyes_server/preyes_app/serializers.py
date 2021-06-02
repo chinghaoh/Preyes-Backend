@@ -29,7 +29,7 @@ class TargetItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TargetItem
-        fields = ['product_item_reference', 'target_price', 'target_list_reference']
+        fields = ['product_item_reference', 'target_price', 'target_price_type', 'target_list_reference']
 
 
 class TargetListSerializer(serializers.ModelSerializer):
